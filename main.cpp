@@ -73,6 +73,8 @@ fprintf(stderr,"posixThread\n");
 //fprintf(stderr,"thread%d  ptr =%p\n",0,ptr);
 //fprintf(stderr,"&thread%d_data=%p\n",pdata->thread_index,(void*)pdata);
   //computations
+  //save loop
+//! \todo [high] _ save loop
   fprintf(stderr,"thread%d\n",pdata->thread_index);
   //Thread ending
   pthread_mutex_lock(pdata->pmutex);
@@ -97,6 +99,7 @@ int main(int argc,char **argv)
   //initialise threads
   const int thread_number=cimg_option("-t",1,"number of thread to run range=[0..[.");
   //!pThread array
+//! \todo [medium] create class for grab buffer thread
   std::vector<pthread_t> thread(thread_number);
   //!thread data array
   std::vector<posixThread_data> thread_data(thread_number);
@@ -117,10 +120,27 @@ int main(int argc,char **argv)
     //create thread
     pthread_create(&(thread[t]),NULL,&posixThread,(void*)(&thread_data[t]));
   }
-  cimg_library::cimg::wait(1234);
-/*
+  //grab loop
+//! \todo [high] _ grab loop
+  //for frame
+//! \todo [high] . wait state true for all (or use pThread wait all thread)
+  //wait for other threads
+  for(int t=0;t<thread_number;++t)
+  {
+    bool state;
+    do
+    {//wait for state==true
+      //check state
+      pthread_mutex_lock(&mutex);
+      state=thread_state[t];
+      pthread_mutex_unlock(&mutex);
+      //sleep a little to unload CPU
+      cimg_library::cimg::wait(12);
+    }while(!state);
+    //show that thread done
+    fprintf(stderr,"thread0: thread%d done.\n",t);
+  }
   pthread_mutex_destroy(&mutex);
-*/
   pthread_exit(0);
 }//main
 
