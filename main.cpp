@@ -61,31 +61,6 @@
 #include <sys/types.h>
 #include "save_posixThread.h"
 
-//!thread computes in this function.
-/**
- *  function return an integer, it should be 0 if it terminates normaly.
- *  \param ptr = this pointer should be a posixThread_data*.
-**/
-void* posixThread(void* ptr)
-{
-fprintf(stderr,"posixThread\n");
-  posixThread_data* pdata=(posixThread_data*)ptr;
-//fprintf(stderr,"thread%d  ptr =%p\n",0,ptr);
-//fprintf(stderr,"&thread%d_data=%p\n",pdata->thread_index,(void*)pdata);
-  //computations
-  //save loop
-//! \todo [high] _ save loop
-  fprintf(stderr,"thread%d\n",pdata->thread_index);
-  //Thread ending
-  pthread_mutex_lock(pdata->pmutex);
-fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
-  *(pdata->pthread_state)=true;//computation done
-fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
-  pthread_mutex_unlock(pdata->pmutex);
-  //stop thread
-  pthread_exit(0);
-}//posixThread
-
 //!the program starts in this main function.
 /**
  *  function return an integer, it should be 0 if it terminates normaly.
@@ -97,9 +72,11 @@ int main(int argc,char **argv)
   //option help
   cimg_usage("grab_buffer");
   //initialise threads
-  const int thread_number=cimg_option("-t",1,"number of thread to run range=[0..[.");
+        int thread_number=cimg_option("-t",1,"number of thread to run range=[0..[.");
   const int image_number=cimg_option("-n",12,"number of image to record.");
         int image_number_in_buffer=cimg_option("-b",1,"number of image in buffer.");
+//temporary values
+  thread_number=1;
   image_number_in_buffer=image_number;
   //!pThread array
 //! \todo [medium] create class for grab buffer thread
@@ -127,7 +104,7 @@ int main(int argc,char **argv)
     //setup data
     thread_state[t]=false;
     //setup thread data
-    thread_data[t].thread_index=t;
+    thread_data[t].thread_index=t+1;
     ///thread state
     thread_data[t].pmutex=&mutex;
     thread_data[t].pthread_state=&(thread_state[t]);
@@ -135,10 +112,10 @@ int main(int argc,char **argv)
     thread_data[t].pgrab_mutex=&frame_mutex;
     thread_data[t].pgrab_index=&shared_frame_index;
     //create thread
-    pthread_create(&(thread[t]),NULL,&posixThread,(void*)(&thread_data[t]));
+    pthread_create(&(thread[t]),NULL,&(posixThread_save/*<int>*/::posixThread),(void*)(&thread_data[t]));
   }
   //grab loop
-//! \todo [high] _ grab loop
+//! \todo [high] . grab loop
   for(int i=0;i<image_number;++i)
   {
     image_buffer[i].assign(234,123,1,1,i);
