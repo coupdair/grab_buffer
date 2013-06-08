@@ -22,7 +22,7 @@ class posixThread_save_data: public posixThread_data
 {
   public:
   //! shared image list with mainThread, i.e. image buffer
-  cimg_library::CImgList<T> shared_image;
+  cimg_library::CImgList<T> *pshared_image;
   //! grab mutex pointer: mutex lock to read grab index
   pthread_mutex_t* pgrab_mutex;
   //! grab_index pointer: value is last grabbed image index
@@ -58,12 +58,12 @@ fprintf(stderr,"posixThread_save\n");
     posixThread_save_data<int/*T*/>* pdata=(posixThread_save_data<int/*T*/>*)ptr;
 //fprintf(stderr,"thread%d  ptr =%p\n",0,ptr);
 //fprintf(stderr,"&thread%d_data=%p\n",pdata->thread_index,(void*)pdata);
-(pdata->shared_image).print("image buffer in thread");
+(*(pdata->pshared_image)).print("image buffer in thread");
     //computations
     //save loop
 //! \todo [high] . save loop
     fprintf(stderr,"thread%d: save_index=%d\n",pdata->thread_index,pdata->save_index);
-    for(int i=0;i<pdata->shared_image.size();++i)
+    for(int i=0;i<(*(pdata->pshared_image)).size();++i)
     {
       int grab_index;
       do
@@ -80,8 +80,8 @@ std::cerr<<"thread"<<pdata->thread_index<<": waiting for image#"<<i<<".\n"<<std:
 std::string image_name="grab.cimg";
       std::string filename;filename.reserve(image_name.size()+16);
       filename=cimg_library::cimg::number_filename(image_name.c_str(),i,3,(char*)filename.c_str());
-(pdata->shared_image[i]).print(filename.c_str());
-      (pdata->shared_image[i]).save(filename.c_str());
+(*(pdata->pshared_image))[i].print(filename.c_str());
+      (*(pdata->pshared_image))[i].save(filename.c_str());
       std::cerr<<"thread"<<pdata->thread_index<<": "<<filename<<" saved.\n";
     }
     //Thread ending i.e. set state

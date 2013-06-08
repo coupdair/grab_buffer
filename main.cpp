@@ -103,10 +103,11 @@ std::cerr<<std::flush;
   //!image buffer
   cimg_library::CImgList<int> image_buffer(image_number_in_buffer,234,123);
 image_buffer.print("image buffer");
+/*
   const cimg_library::CImgList<int> image_buffer_shared=image_buffer.get_shared();
 image_buffer_shared.print("image buffer shared");
 image_buffer.print("image buffer");
-/*
+*/
   //create threads
   for(int t=0;t<thread_number;++t)
   {
@@ -118,10 +119,13 @@ image_buffer.print("image buffer");
     thread_data[t].pmutex=&mutex;
     thread_data[t].pthread_state=&(thread_state[t]);
     ///set grab image list (as shared data)
+    thread_data[t].pshared_image=&image_buffer;
+/*
     thread_data[t].shared_image.assign(image_number_in_buffer);
 thread_data[t].shared_image.print("shared_image 1");
     cimglist_for(image_buffer,i) (thread_data[t].shared_image[i])=image_buffer[i].get_shared_channel(0);
 thread_data[t].shared_image.print("shared_image 2");
+*/
     ///set grab index (i.e. both data and its mutex)
     thread_data[t].pgrab_mutex=&frame_mutex;
     thread_data[t].pgrab_index=&shared_frame_index;
@@ -129,6 +133,9 @@ thread_data[t].shared_image.print("shared_image 2");
 //    pthread_create(&(thread[t]),NULL,&(posixThread_save<int>::posixThread),(void*)(&thread_data[t]));
     pthread_create(&(thread[t]),NULL,&(posixThread_save::posixThread),(void*)(&thread_data[t]));
   }
+  //grab init
+//load CPU, so other thread are waiting a little
+for(int j=0;j<image_number;++j) for(int i=0;i<image_number;++i) image_buffer[i].fill(0.123*(i*j+1)).cos().fill(1.23*(i*j+1)).sin().fill(12.3*(i*j+1)).tan();
   //grab loop
 //! \todo [high] . grab loop
   for(int i=0;i<image_number;++i)
@@ -166,6 +173,5 @@ image_buffer[i].print(title.c_str());
   }
   pthread_mutex_destroy(&mutex);
   pthread_exit(0);
-*/
 }//main
 
