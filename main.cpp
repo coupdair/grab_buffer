@@ -76,8 +76,12 @@ int main(int argc,char **argv)
   const int image_number=cimg_option("-n",12,"number of image to record.");
         int image_number_in_buffer=cimg_option("-b",1,"number of image in buffer.");
 //temporary values
+std::cerr<<"warning development version:\n";
   thread_number=1;
+std::cerr<<"- main and "<<thread_number<<" thread only.\n"<<std::flush;
   image_number_in_buffer=image_number;
+std::cerr<<"- buffer and recorded image numbers are the same.\n"<<std::flush;
+std::cerr<<std::flush;
   //!pThread array
 //! \todo [medium] create class for grab buffer thread
   std::vector<pthread_t> thread(thread_number);
@@ -97,7 +101,8 @@ int main(int argc,char **argv)
   pthread_mutex_init(&frame_mutex,NULL);
 
   //!image buffer
-  cimg_library::CImgList<int> image_buffer(image_number_in_buffer);
+  cimg_library::CImgList<int> image_buffer(image_number_in_buffer,234,123);
+image_buffer.print("image buffer");
   //create threads
   for(int t=0;t<thread_number;++t)
   {
@@ -108,6 +113,8 @@ int main(int argc,char **argv)
     ///thread state
     thread_data[t].pmutex=&mutex;
     thread_data[t].pthread_state=&(thread_state[t]);
+    ///grab image list
+    thread_data[t].shared_image=image_buffer.get_shared();
     ///grab index
     thread_data[t].pgrab_mutex=&frame_mutex;
     thread_data[t].pgrab_index=&shared_frame_index;
@@ -118,13 +125,20 @@ int main(int argc,char **argv)
 //! \todo [high] . grab loop
   for(int i=0;i<image_number;++i)
   {
-    image_buffer[i].assign(234,123,1,1,i);
+    image_buffer[i].fill(i);
+std::string prefix="grab";
+std::string title;title.reserve(prefix.size()+16);
+title=cimg_library::cimg::number_filename(prefix.c_str(),i,3,(char*)title.c_str());
+image_buffer[i].print(title.c_str());
     //set grabbed frame
     pthread_mutex_lock(&frame_mutex);
     shared_frame_index=i;
     pthread_mutex_unlock(&frame_mutex);
   }
-  //for frame
+  //set fake last grabbed frame
+  pthread_mutex_lock(&frame_mutex);
+  ++shared_frame_index;
+  pthread_mutex_unlock(&frame_mutex);
 //! \todo [high] . wait state true for all (or use pThread wait all thread)
   //wait for other threads
   for(int t=0;t<thread_number;++t)
@@ -132,15 +146,15 @@ int main(int argc,char **argv)
     bool state;
     do
     {//wait for state==true
+      //sleep a little to unload CPU
+      cimg_library::cimg::wait(12);
       //check state
       pthread_mutex_lock(&mutex);
       state=thread_state[t];
       pthread_mutex_unlock(&mutex);
-      //sleep a little to unload CPU
-      cimg_library::cimg::wait(12);
     }while(!state);
     //show that thread done
-    fprintf(stderr,"thread0: thread%d done.\n",t);
+    fprintf(stderr,"thread0: thread%d done.\n",t+1);
   }
   pthread_mutex_destroy(&mutex);
   pthread_exit(0);
