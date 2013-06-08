@@ -59,7 +59,7 @@
 
 //POSIXThread
 #include <sys/types.h>
-#include "posixThread.h"
+#include "save_posixThread.h"
 
 //!thread computes in this function.
 /**
@@ -98,30 +98,55 @@ int main(int argc,char **argv)
   cimg_usage("grab_buffer");
   //initialise threads
   const int thread_number=cimg_option("-t",1,"number of thread to run range=[0..[.");
+  const int image_number=cimg_option("-n",12,"number of image to record.");
+        int image_number_in_buffer=cimg_option("-b",1,"number of image in buffer.");
+  image_number_in_buffer=image_number;
   //!pThread array
 //! \todo [medium] create class for grab buffer thread
   std::vector<pthread_t> thread(thread_number);
   //!thread data array
-  std::vector<posixThread_data> thread_data(thread_number);
+  std::vector< posixThread_save_data<int> > thread_data(thread_number);
   //!state data array
 //  std::vector<bool> thread_state(thread_number);
   bool *thread_state=new bool[thread_number];
-  //!thread mutex to acces to data
+  //!thread mutex to access to data
   pthread_mutex_t mutex;
   pthread_mutex_init(&mutex,NULL);
+
+  //!frame index, i.e. current grab index
+  int shared_frame_index=-1;
+  //!thread mutex to access to data
+  pthread_mutex_t frame_mutex;
+  pthread_mutex_init(&frame_mutex,NULL);
+
+  //!image buffer
+  cimg_library::CImgList<int> image_buffer(image_number_in_buffer);
+  //create threads
   for(int t=0;t<thread_number;++t)
   {
     //setup data
     thread_state[t]=false;
     //setup thread data
     thread_data[t].thread_index=t;
+    ///thread state
     thread_data[t].pmutex=&mutex;
     thread_data[t].pthread_state=&(thread_state[t]);
+    ///grab index
+    thread_data[t].pgrab_mutex=&frame_mutex;
+    thread_data[t].pgrab_index=&shared_frame_index;
     //create thread
     pthread_create(&(thread[t]),NULL,&posixThread,(void*)(&thread_data[t]));
   }
   //grab loop
 //! \todo [high] _ grab loop
+  for(int i=0;i<image_number;++i)
+  {
+    image_buffer[i].assign(234,123,1,1,i);
+    //set grabbed frame
+    pthread_mutex_lock(&frame_mutex);
+    shared_frame_index=i;
+    pthread_mutex_unlock(&frame_mutex);
+  }
   //for frame
 //! \todo [high] . wait state true for all (or use pThread wait all thread)
   //wait for other threads

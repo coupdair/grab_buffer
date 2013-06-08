@@ -4,13 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-//STL
-#include <iostream>
-#include <vector>
-//sleep
-#include <unistd.h>
-//using CImg library
-#include "../CImg/CImg.h"
 
 //!data shared by mainThread and posixThread.
 /**
