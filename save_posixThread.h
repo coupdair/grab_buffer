@@ -27,6 +27,7 @@ class posixThread_save_data: public posixThread_data
   pthread_mutex_t* pgrab_mutex;
   //! grab_index pointer: value is last grabbed image index
   int* pgrab_index;
+//! \todo \c save_index not used, yet ! (should be used for buffer < record image sizes)
   //! last saved image index
   int save_index;
   //! constructor
@@ -43,7 +44,9 @@ class posixThread_save_data: public posixThread_data
 /**
  *  
 **/
-//template<typename T>
+//! \todo [medium] try to put template back
+//! \todo [medium] try to remove pointer with get function in class
+template<typename T>
 class posixThread_save
 {
   public:
@@ -55,7 +58,7 @@ class posixThread_save
 static  void* posixThread(void* ptr)
   {
 fprintf(stderr,"posixThread_save\n");
-    posixThread_save_data<int/*T*/>* pdata=(posixThread_save_data<int/*T*/>*)ptr;
+    posixThread_save_data<T>* pdata=(posixThread_save_data<T>*)ptr;
 //fprintf(stderr,"thread%d  ptr =%p\n",0,ptr);
 //fprintf(stderr,"&thread%d_data=%p\n",pdata->thread_index,(void*)pdata);
 (*(pdata->pshared_image)).print("image buffer in thread");
@@ -84,6 +87,7 @@ std::string image_name="grab.cimg";
       (*(pdata->pshared_image))[i].save(filename.c_str());
       std::cerr<<"thread"<<pdata->thread_index<<": "<<filename<<" saved.\n";
     }
+//! \todo [medium] should be in parent class
     //Thread ending i.e. set state
     pthread_mutex_lock(pdata->pmutex);
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
