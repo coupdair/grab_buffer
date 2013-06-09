@@ -50,8 +50,7 @@ template<typename T>
 class posixThread_save
 {
   public:
-  posixThread_save_data<T>* pdata;
-  void exec(posixThread_save_data<T> &shared_data)
+  static void exec(posixThread_save_data<T> &shared_data)
   {//save loop
     fprintf(stderr,"thread%d: save_index=%d\n",shared_data.thread_index,shared_data.save_index);
     for(int i=0;i<shared_data.pshared_image->size();++i)
@@ -76,11 +75,8 @@ std::string image_name="grab.cimg";
       std::cerr<<"thread"<<shared_data.thread_index<<": "<<filename<<" saved.\n";
     }//save loop
   }//exec
-  void exec(void)
-  {
-    exec(*pdata);
-  }
-  void stop(posixThread_save_data<T>* pdata)
+//! \todo [next] setup &shared_data as for exec
+  static void stop(posixThread_save_data<T>* pdata)
   {
     pthread_mutex_lock(pdata->pmutex);
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
@@ -89,10 +85,6 @@ fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->
     pthread_mutex_unlock(pdata->pmutex);
     //stop thread
     pthread_exit(0);
-  }
-  void stop(void)
-  {
-    exec(pdata);
   }
   //!thread computes in this function.
   /**
@@ -103,18 +95,16 @@ static  void* posixThread(void* ptr)
   {
 //init pdata (could be class member ?)
 fprintf(stderr,"posixThread_save\n");
-    pdata=(posixThread_save_data<T>*)ptr;
+    posixThread_save_data<T>* pdata=(posixThread_save_data<T>*)ptr;
 //fprintf(stderr,"thread%d  ptr =%p\n",0,ptr);
 //fprintf(stderr,"&thread%d_data=%p\n",pdata->thread_index,(void*)pdata);
 (*(pdata->pshared_image)).print("image buffer in thread");
 //computations i.e. exec function
     //save loop
-//    exec(*pdata);
-    exec();
+    exec(*pdata);
 //! \todo [medium] should be in parent class
 //Thread ending i.e. set state and stop
-//    stop(pdata);
-    stop();
+    stop(pdata);
   }//posixThread
 };//posixThread_save
 #endif/*POSIX_THREAD_SAVE*/
