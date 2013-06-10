@@ -59,7 +59,7 @@
 
 //POSIXThread
 #include <sys/types.h>
-#include "save_posixThread.h"
+#include "grab_buffer_posixThread.h"
 
 //!the program starts in this main function.
 /**
@@ -72,9 +72,9 @@ int main(int argc,char **argv)
   //option help
   cimg_usage("grab_buffer");
   //initialise threads
-        int thread_number=cimg_option("-t",1,"number of thread to run range=[0..[.");
-  const int image_number=cimg_option("-n",12,"number of image to record.");
-        int image_number_in_buffer=cimg_option("-b",1,"number of image in buffer.");
+  int thread_number=cimg_option("-t",1,"number of thread to run range=[0..[.");
+  int image_number=cimg_option("-n",12,"number of image to record.");
+  int image_number_in_buffer=cimg_option("-b",1,"number of image in buffer.");
 //temporary values
 std::cerr<<"warning development version:\n";
   thread_number=1;
@@ -137,23 +137,7 @@ thread_data[t].shared_image.print("shared_image 2");
 //load CPU, so other thread are waiting a little
 for(int j=0;j<image_number;++j) for(int i=0;i<image_number;++i) image_buffer[i].fill(0.123*(i*j+1)).cos().fill(1.23*(i*j+1)).sin().fill(12.3*(i*j+1)).tan();
   //grab loop
-//! \todo [high] . grab loop
-  for(int i=0;i<image_number;++i)
-  {
-    image_buffer[i].fill(i);
-std::string prefix="grab";
-std::string title;title.reserve(prefix.size()+16);
-title=cimg_library::cimg::number_filename(prefix.c_str(),i,3,(char*)title.c_str());
-image_buffer[i].print(title.c_str());
-    //set grabbed frame
-    pthread_mutex_lock(&frame_mutex);
-    shared_frame_index=i;
-    pthread_mutex_unlock(&frame_mutex);
-  }
-  //set fake last grabbed frame
-  pthread_mutex_lock(&frame_mutex);
-  ++shared_frame_index;
-  pthread_mutex_unlock(&frame_mutex);
+  grab_buffer_posixThread<int>::grab_buffer(image_number,image_buffer,frame_mutex,shared_frame_index);
 //! \todo [high] . wait state true for all (or use pThread wait all thread)
   //wait for other threads
   for(int t=0;t<thread_number;++t)
