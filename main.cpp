@@ -137,7 +137,8 @@ thread_data[t].shared_image.print("shared_image 2");
 //load CPU, so other thread are waiting a little
 for(int j=0;j<image_number;++j) for(int i=0;i<image_number;++i) image_buffer[i].fill(0.123*(i*j+1)).cos().fill(1.23*(i*j+1)).sin().fill(12.3*(i*j+1)).tan();
   //grab loop
-  grab_buffer_posixThread<int>::grab_buffer(image_number,image_buffer,frame_mutex,shared_frame_index);
+  grab_buffer_posixThread<int> grabuffer;
+  grabuffer.grab_buffer(image_number,image_buffer,frame_mutex,shared_frame_index);
 //! \todo [high] . wait state true for all (or use pThread wait all thread)
   //wait for other threads
   for(int t=0;t<thread_number;++t)
