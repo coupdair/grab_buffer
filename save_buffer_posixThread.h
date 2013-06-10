@@ -79,9 +79,9 @@ std::string image_name="grab.cimg";
 static void stop(posixThread_data_saveBuffer<T> &shared_data)
   {
     pthread_mutex_lock(shared_data.pstate_mutex);
-fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",shared_data.thread_index,shared_data.thread_index,(*(shared_data.pthread_state))?"true":"false");
+//fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",shared_data.thread_index,shared_data.thread_index,(*(shared_data.pthread_state))?"true":"false");
     *(shared_data.pthread_state)=true;//computation done
-fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",shared_data.thread_index,shared_data.thread_index,(*(shared_data.pthread_state))?"true":"false");
+//fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",shared_data.thread_index,shared_data.thread_index,(*(shared_data.pthread_state))?"true":"false");
     pthread_mutex_unlock(shared_data.pstate_mutex);
     //stop thread
     pthread_exit(0);

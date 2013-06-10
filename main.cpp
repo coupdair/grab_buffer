@@ -77,8 +77,8 @@ int main(int argc,char **argv)
   int image_number_in_buffer=cimg_option("-b",1,"number of image in buffer.");
 //temporary values
 std::cerr<<"warning development version:\n";
-  thread_number=1;
-std::cerr<<"- main and "<<thread_number<<" thread only.\n"<<std::flush;
+  if(thread_number>1) thread_number=1;
+std::cerr<<"- main (and "<<thread_number<<" thread) only.\n"<<std::flush;
   image_number_in_buffer=image_number;
 std::cerr<<"- buffer and recorded image numbers are the same.\n"<<std::flush;
 std::cerr<<std::flush;

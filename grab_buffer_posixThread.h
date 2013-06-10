@@ -36,12 +36,13 @@ class grab_buffer_posixThread
   pthread_mutex_t state_mutex;
 
   public:
-  //!
+  //! run a number of save thread(s)
   /**
    *  
   **/
-  int start_save_thread(int thread_number=0)
+  int start_save_thread(int thread_number)
   {
+    if(thread_number<1) {std::cerr<<"warning: use single thread (i.e. grab thread only, no save thread)."<<std::flush;return 1;}
     //initialise thread structures
     thread.resize(thread_number);
     thread_data.resize(thread_number);
@@ -67,13 +68,14 @@ class grab_buffer_posixThread
       pthread_create(&(thread[t]),NULL,&(savebuffer.posixThread),(void*)(&thread_data[t]));
     }
     return 0;
-  }//save_thread
-  //!
+  }//start_save_thread
+  //! wait that all save thread are done
   /**
    *  \param [in] delay: try thread state each \c delay millisecond
   **/
   int wait_save_thread(int delay=12)
-  {//constructor
+  {
+    if(thread.size()<1) {std::cerr<<"warning: use single thread (i.e. no need to wait as no save thread).\n"<<std::flush;return 1;}
     //wait for other threads
     for(int t=0;t<thread.size();++t)
     {
@@ -93,11 +95,13 @@ std::cerr<<"thread0: waiting for thread"<<t<<".\n"<<std::flush;
     }
     //detroy structures related to threads
     pthread_mutex_destroy(&state_mutex);
-////! \todo arrays
-//    delete thread_number;
+//! \todo . arrays
+    delete thread_state;
+    thread_data.clear();
+    thread.clear();
     return 0;
   }//wait_save_thread
-  //!
+  //! constructor
   /**
    *  
   **/
@@ -125,18 +129,27 @@ std::string prefix="grab";
 std::string title;title.reserve(prefix.size()+16);
 title=cimg_library::cimg::number_filename(prefix.c_str(),i,3,(char*)title.c_str());
 image_buffer[i].print(title.c_str());
-      //set grabbed frame
-      pthread_mutex_lock(&frame_mutex);
-      shared_frame_index=i;
-      pthread_mutex_unlock(&frame_mutex);
-    }
+      if(thread.size()>0)
+      {//save thread running
+        //set grabbed frame
+        pthread_mutex_lock(&frame_mutex);
+        shared_frame_index=i;
+        pthread_mutex_unlock(&frame_mutex);
+      }
+      else
+      {//single grab thread (i.e. no save thread)
+        std::cerr<<"warning: single thread is running, grab thread is saving image one by one.\n"<<std::flush;
+//! \todo [single] save image
+        image_buffer[i].save("single_grab.cimg");
+      }
+    }//frame loop
     //set fake last grabbed frame for last saving in save thread(s)
     pthread_mutex_lock(&frame_mutex);
     ++shared_frame_index;
     pthread_mutex_unlock(&frame_mutex);
     return shared_frame_index;
   }//grab_buffer
-  //!
+  //! destructor
   /**
    *  
   **/
