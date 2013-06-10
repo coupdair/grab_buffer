@@ -85,13 +85,14 @@ std::cerr<<std::flush;
   //grab in buffer
   grab_buffer_posixThread<int> grabuffer(image_number_in_buffer,321,123);
   //save buffer using other thread(s)
-  grabuffer.save_thread(thread_number);
+  grabuffer.start_save_thread(thread_number);//unblocking
   //grab init
 //load CPU, so other thread are waiting a little
 for(int j=0;j<image_number;++j) for(int i=0;i<image_number;++i) grabuffer.image_buffer[i].fill(0.123*(i*j+1)).cos().fill(1.23*(i*j+1)).sin().fill(12.3*(i*j+1)).tan();
   //grab loop
-  grabuffer.grab_buffer(image_number);
-//! \todo [high] . wait state true for all (or use pThread wait all thread)
+  grabuffer.grab_buffer(image_number);//blocking
+  //wait for other threads
+  grabuffer.wait_save_thread(12);
   pthread_exit(0);
 }//main
 

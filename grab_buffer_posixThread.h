@@ -40,7 +40,7 @@ class grab_buffer_posixThread
   /**
    *  
   **/
-  int save_thread(int thread_number=0)
+  int start_save_thread(int thread_number=0)
   {
     //initialise thread structures
     thread.resize(thread_number);
@@ -68,6 +68,35 @@ class grab_buffer_posixThread
     }
     return 0;
   }//save_thread
+  //!
+  /**
+   *  \param [in] delay: try thread state each \c delay millisecond
+  **/
+  int wait_save_thread(int delay=12)
+  {//constructor
+    //wait for other threads
+    for(int t=0;t<thread.size();++t)
+    {
+      bool state;
+      do
+      {//wait for state==true
+        //sleep a little to unload CPU
+std::cerr<<"thread0: waiting for thread"<<t<<".\n"<<std::flush;
+        cimg_library::cimg::wait(delay);
+        //check state
+        pthread_mutex_lock(&state_mutex);
+        state=thread_state[t];
+        pthread_mutex_unlock(&state_mutex);
+      }while(!state);
+      //show that thread done
+      fprintf(stderr,"thread0: thread%d done.\n",t+1);
+    }
+    //detroy structures related to threads
+    pthread_mutex_destroy(&state_mutex);
+////! \todo arrays
+//    delete thread_number;
+    return 0;
+  }//wait_save_thread
   //!
   /**
    *  
