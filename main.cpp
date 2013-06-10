@@ -91,8 +91,8 @@ std::cerr<<std::flush;
 //  std::vector<bool> thread_state(thread_number);
   bool *thread_state=new bool[thread_number];
   //!thread mutex to access to data
-  pthread_mutex_t mutex;
-  pthread_mutex_init(&mutex,NULL);
+  pthread_mutex_t state_mutex;
+  pthread_mutex_init(&state_mutex,NULL);
 
   //!frame index, i.e. current grab index
   int shared_frame_index=-1;
@@ -116,7 +116,7 @@ image_buffer.print("image buffer");
     //setup thread data
     thread_data[t].thread_index=t+1;
     ///set thread state (i.e. both data and its mutex)
-    thread_data[t].pstate_mutex=&mutex;
+    thread_data[t].pstate_mutex=&state_mutex;
     thread_data[t].pthread_state=&(thread_state[t]);
     ///set grab image list (as shared data)
     thread_data[t].pshared_image=&image_buffer;
@@ -150,14 +150,15 @@ for(int j=0;j<image_number;++j) for(int i=0;i<image_number;++i) image_buffer[i].
 std::cerr<<"thread0: waiting for thread"<<t<<".\n"<<std::flush;
       cimg_library::cimg::wait(12);
       //check state
-      pthread_mutex_lock(&mutex);
+      pthread_mutex_lock(&state_mutex);
       state=thread_state[t];
-      pthread_mutex_unlock(&mutex);
+      pthread_mutex_unlock(&state_mutex);
     }while(!state);
     //show that thread done
     fprintf(stderr,"thread0: thread%d done.\n",t+1);
   }
-  pthread_mutex_destroy(&mutex);
+  pthread_mutex_destroy(&frame_mutex);
+  pthread_mutex_destroy(&state_mutex);
   pthread_exit(0);
 }//main
 
