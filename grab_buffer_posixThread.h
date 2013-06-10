@@ -30,7 +30,7 @@ image_buffer[i].print(title.c_str());
       shared_frame_index=i;
       pthread_mutex_unlock(&frame_mutex);
     }
-    //set fake last grabbed frame for save thread(s)
+    //set fake last grabbed frame for last saving in save thread(s)
     pthread_mutex_lock(&frame_mutex);
     ++shared_frame_index;
     pthread_mutex_unlock(&frame_mutex);

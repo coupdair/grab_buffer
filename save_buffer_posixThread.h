@@ -44,11 +44,11 @@ class posixThread_data_saveBuffer: public posixThread_data
 /**
  *  
 **/
-//! \todo [medium] v try to put template back
 //! \todo [medium] try to remove pointer with get function in class
 template<typename T>
 class save_buffer_posixThread
 {
+//  posixThread_data_saveBuffer<T>* pdata;
   public:
 static void exec(posixThread_data_saveBuffer<T> &shared_data)
   {//save loop
@@ -76,14 +76,13 @@ std::string image_name="grab.cimg";
       std::cerr<<"thread"<<shared_data.thread_index<<": "<<filename<<" saved.\n";
     }//save loop
   }//exec
-//! \todo [next] setup &shared_data as for exec
-static void stop(posixThread_data_saveBuffer<T>* pdata)
+static void stop(posixThread_data_saveBuffer<T> &shared_data)
   {
-    pthread_mutex_lock(pdata->pstate_mutex);
-fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
-    *(pdata->pthread_state)=true;//computation done
-fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
-    pthread_mutex_unlock(pdata->pstate_mutex);
+    pthread_mutex_lock(shared_data.pstate_mutex);
+fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",shared_data.thread_index,shared_data.thread_index,(*(shared_data.pthread_state))?"true":"false");
+    *(shared_data.pthread_state)=true;//computation done
+fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",shared_data.thread_index,shared_data.thread_index,(*(shared_data.pthread_state))?"true":"false");
+    pthread_mutex_unlock(shared_data.pstate_mutex);
     //stop thread
     pthread_exit(0);
   }
@@ -105,7 +104,7 @@ fprintf(stderr,"save_buffer_posixThread\n");
     exec(*pdata);
 //! \todo [medium] should be in parent class
 //Thread ending i.e. set state and stop
-    stop(pdata);
+    stop(*pdata);
   }//posixThread
 };//save_buffer_posixThread
 #endif/*SAVE_BUFFER_POSIX_THREAD*/
