@@ -116,7 +116,7 @@ image_buffer.print("image buffer");
     //setup thread data
     thread_data[t].thread_index=t+1;
     ///set thread state (i.e. both data and its mutex)
-    thread_data[t].pmutex=&mutex;
+    thread_data[t].pstate_mutex=&mutex;
     thread_data[t].pthread_state=&(thread_state[t]);
     ///set grab image list (as shared data)
     thread_data[t].pshared_image=&image_buffer;

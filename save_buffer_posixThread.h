@@ -67,6 +67,7 @@ std::cerr<<"thread"<<shared_data.thread_index<<": waiting for image#"<<i<<".\n"<
         pthread_mutex_unlock(shared_data.pgrab_mutex);
       }while(!(i<grab_index));
       //save grabbed image
+//! \todo [grab] name should be related to grab class
 std::string image_name="grab.cimg";
       std::string filename;filename.reserve(image_name.size()+16);
       filename=cimg_library::cimg::number_filename(image_name.c_str(),i,3,(char*)filename.c_str());
@@ -78,11 +79,11 @@ std::string image_name="grab.cimg";
 //! \todo [next] setup &shared_data as for exec
 static void stop(posixThread_data_saveBuffer<T>* pdata)
   {
-    pthread_mutex_lock(pdata->pmutex);
+    pthread_mutex_lock(pdata->pstate_mutex);
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
     *(pdata->pthread_state)=true;//computation done
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
-    pthread_mutex_unlock(pdata->pmutex);
+    pthread_mutex_unlock(pdata->pstate_mutex);
     //stop thread
     pthread_exit(0);
   }

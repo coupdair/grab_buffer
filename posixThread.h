@@ -16,8 +16,8 @@ struct posixThread_data
   //! thread index: value < number of threads (information only)
   int thread_index;
 //! \todo [medium] rename state mutex
-  //! mutex pointer: mutex lock to read and write thread_state (not needed if task is a single block, used for debugging purpose)
-  pthread_mutex_t* pmutex;
+  //! state mutex pointer: mutex lock to read and write thread_state (not needed if task is a single block, used for debugging purpose)
+  pthread_mutex_t* pstate_mutex;
   //! thread state pointer: value is true computation successfull (used for debugging purpose)
   bool* pthread_state;
 };
@@ -39,11 +39,11 @@ fprintf(stderr,"posixThread\n");
 //! \todo [high] _ save loop
   fprintf(stderr,"thread%d\n",pdata->thread_index);
   //Thread ending
-  pthread_mutex_lock(pdata->pmutex);
+  pthread_mutex_lock(pdata->pstate_mutex);
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
   *(pdata->pthread_state)=true;//computation done
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
-  pthread_mutex_unlock(pdata->pmutex);
+  pthread_mutex_unlock(pdata->pstate_mutex);
   //stop thread
   pthread_exit(0);
 }//posixThread

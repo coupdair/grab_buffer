@@ -19,6 +19,7 @@ class grab_buffer_posixThread
   {//save loop
     for(int i=0;i<image_number;++i)
     {
+//! \todo [grab] grab should be related to grab class
       image_buffer[i].fill(i);
 std::string prefix="grab";
 std::string title;title.reserve(prefix.size()+16);
