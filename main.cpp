@@ -84,67 +84,14 @@ std::cerr<<"- buffer and recorded image numbers are the same.\n"<<std::flush;
 std::cerr<<std::flush;
   //grab in buffer
   grab_buffer_posixThread<int> grabuffer(image_number_in_buffer,321,123);
-  //!pThread array
-//! \todo [medium] create class for grab buffer thread
-  std::vector<pthread_t> thread(thread_number);
-  //!thread data array
-  std::vector< posixThread_data_saveBuffer<int> > thread_data(thread_number);
-  //!state data array
-//  std::vector<bool> thread_state(thread_number);
-  bool *thread_state=new bool[thread_number];
-  //!thread mutex to access to data
-  pthread_mutex_t state_mutex;
-  pthread_mutex_init(&state_mutex,NULL);
-
-  //create threads
-  for(int t=0;t<thread_number;++t)
-  {
-    //setup data
-    thread_state[t]=false;
-    //setup thread data
-    thread_data[t].thread_index=t+1;
-    ///set thread state (i.e. both data and its mutex)
-    thread_data[t].pstate_mutex=&(state_mutex);
-    thread_data[t].pthread_state=&(thread_state[t]);
-    ///set grab image list (as shared data)
-    thread_data[t].pshared_image=&(grabuffer.image_buffer);
-/*
-    thread_data[t].shared_image.assign(image_number_in_buffer);
-thread_data[t].shared_image.print("shared_image 1");
-    cimglist_for(image_buffer,i) (thread_data[t].shared_image[i])=image_buffer[i].get_shared_channel(0);
-thread_data[t].shared_image.print("shared_image 2");
-*/
-    ///set grab index (i.e. both data and its mutex)
-    thread_data[t].pgrab_mutex=&(grabuffer.frame_mutex);
-    thread_data[t].pgrab_index=&(grabuffer.shared_frame_index);
-    //create thread
-    save_buffer_posixThread<int> savebuffer;
-    pthread_create(&(thread[t]),NULL,&(savebuffer.posixThread),(void*)(&thread_data[t]));
-  }
+  //save buffer using other thread(s)
+  grabuffer.save_thread(thread_number);
   //grab init
 //load CPU, so other thread are waiting a little
 for(int j=0;j<image_number;++j) for(int i=0;i<image_number;++i) grabuffer.image_buffer[i].fill(0.123*(i*j+1)).cos().fill(1.23*(i*j+1)).sin().fill(12.3*(i*j+1)).tan();
   //grab loop
   grabuffer.grab_buffer(image_number);
 //! \todo [high] . wait state true for all (or use pThread wait all thread)
-  //wait for other threads
-  for(int t=0;t<thread_number;++t)
-  {
-    bool state;
-    do
-    {//wait for state==true
-      //sleep a little to unload CPU
-std::cerr<<"thread0: waiting for thread"<<t<<".\n"<<std::flush;
-      cimg_library::cimg::wait(12);
-      //check state
-      pthread_mutex_lock(&state_mutex);
-      state=thread_state[t];
-      pthread_mutex_unlock(&state_mutex);
-    }while(!state);
-    //show that thread done
-    fprintf(stderr,"thread0: thread%d done.\n",t+1);
-  }
-  pthread_mutex_destroy(&state_mutex);
   pthread_exit(0);
 }//main
 
