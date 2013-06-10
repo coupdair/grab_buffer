@@ -130,8 +130,8 @@ thread_data[t].shared_image.print("shared_image 2");
     thread_data[t].pgrab_mutex=&frame_mutex;
     thread_data[t].pgrab_index=&shared_frame_index;
     //create thread
-//    pthread_create(&(thread[t]),NULL,&(posixThread_save<int>::posixThread),(void*)(&thread_data[t]));
-    pthread_create(&(thread[t]),NULL,&(posixThread_save<int>::posixThread),(void*)(&thread_data[t]));
+    posixThread_save<int> savebuffer;
+    pthread_create(&(thread[t]),NULL,&(savebuffer.posixThread),(void*)(&thread_data[t]));
   }
   //grab init
 //load CPU, so other thread are waiting a little

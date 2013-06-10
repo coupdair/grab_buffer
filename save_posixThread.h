@@ -50,7 +50,7 @@ template<typename T>
 class posixThread_save
 {
   public:
-  static void exec(posixThread_save_data<T> &shared_data)
+static void exec(posixThread_save_data<T> &shared_data)
   {//save loop
     fprintf(stderr,"thread%d: save_index=%d\n",shared_data.thread_index,shared_data.save_index);
     for(int i=0;i<shared_data.pshared_image->size();++i)
@@ -76,7 +76,7 @@ std::string image_name="grab.cimg";
     }//save loop
   }//exec
 //! \todo [next] setup &shared_data as for exec
-  static void stop(posixThread_save_data<T>* pdata)
+static void stop(posixThread_save_data<T>* pdata)
   {
     pthread_mutex_lock(pdata->pmutex);
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
@@ -91,7 +91,7 @@ fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->
    *  function return an integer, it should be 0 if it terminates normaly.
    *  \param ptr = this pointer should be a posixThread_data*.
   **/
-static  void* posixThread(void* ptr)
+static void* posixThread(void* ptr)
   {
 //init pdata (could be class member ?)
 fprintf(stderr,"posixThread_save\n");
