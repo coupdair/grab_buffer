@@ -13,9 +13,31 @@ template<typename T>
 class grab_buffer_posixThread
 {
   public:
-  void grab_buffer(int &image_number,
-    cimg_library::CImgList<T> &image_buffer,
-    pthread_mutex_t &frame_mutex, int &shared_frame_index)
+  int image_number;
+  cimg_library::CImgList<T> image_buffer;
+  //! shared index for frame count
+  pthread_mutex_t frame_mutex;
+  int shared_frame_index;
+  public:
+  //!
+  /**
+   *  
+  **/
+  grab_buffer_posixThread(int image_number_in_buffer,int width=0,int height=0)
+  {//constructor
+    //!frame index, i.e. current grab index
+    shared_frame_index=-1;
+    //!thread mutex to access to data
+    pthread_mutex_init(&frame_mutex,NULL);
+    //!image buffer
+    image_buffer.assign(image_number_in_buffer,width,height);
+image_buffer.print("image buffer");
+  }//constructor
+  //!
+  /**
+   *  
+  **/
+  void grab_buffer(int &image_number)
   {//save loop
     for(int i=0;i<image_number;++i)
     {
@@ -35,6 +57,14 @@ image_buffer[i].print(title.c_str());
     ++shared_frame_index;
     pthread_mutex_unlock(&frame_mutex);
   }//grab_buffer
+  //!
+  /**
+   *  
+  **/
+  ~grab_buffer_posixThread(void)
+  {//destructor
+    pthread_mutex_destroy(&frame_mutex);
+  }//destructor
 };//grab_buffer_posixThread
 #endif/*GRAB_BUFFER_POSIX_THREAD*/
 
