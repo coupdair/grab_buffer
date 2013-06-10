@@ -1,5 +1,5 @@
-#ifndef POSIX_THREAD_SAVE
-#define POSIX_THREAD_SAVE
+#ifndef SAVE_BUFFER_POSIX_THREAD
+#define SAVE_BUFFER_POSIX_THREAD
 
 //POSIXThread
 #include <sys/types.h>
@@ -18,7 +18,7 @@
  *  
 **/
 template<typename T>
-class posixThread_save_data: public posixThread_data
+class posixThread_data_saveBuffer: public posixThread_data
 {
   public:
   //! shared image list with mainThread, i.e. image buffer
@@ -34,11 +34,11 @@ class posixThread_save_data: public posixThread_data
   /**
    *
   **/
-  posixThread_save_data()
+  posixThread_data_saveBuffer()
   {
     save_index=-1;
   }//constructor
-};//posixThread_save_data
+};//posixThread_data_saveBuffer
 
 //! posixThread.
 /**
@@ -47,10 +47,10 @@ class posixThread_save_data: public posixThread_data
 //! \todo [medium] v try to put template back
 //! \todo [medium] try to remove pointer with get function in class
 template<typename T>
-class posixThread_save
+class save_buffer_posixThread
 {
   public:
-static void exec(posixThread_save_data<T> &shared_data)
+static void exec(posixThread_data_saveBuffer<T> &shared_data)
   {//save loop
     fprintf(stderr,"thread%d: save_index=%d\n",shared_data.thread_index,shared_data.save_index);
     for(int i=0;i<shared_data.pshared_image->size();++i)
@@ -76,7 +76,7 @@ std::string image_name="grab.cimg";
     }//save loop
   }//exec
 //! \todo [next] setup &shared_data as for exec
-static void stop(posixThread_save_data<T>* pdata)
+static void stop(posixThread_data_saveBuffer<T>* pdata)
   {
     pthread_mutex_lock(pdata->pmutex);
 fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->thread_index,(*(pdata->pthread_state))?"true":"false");
@@ -94,8 +94,8 @@ fprintf(stderr,"thread%d_data=(index=%d,state=%s)\n",pdata->thread_index,pdata->
 static void* posixThread(void* ptr)
   {
 //init pdata (could be class member ?)
-fprintf(stderr,"posixThread_save\n");
-    posixThread_save_data<T>* pdata=(posixThread_save_data<T>*)ptr;
+fprintf(stderr,"save_buffer_posixThread\n");
+    posixThread_data_saveBuffer<T>* pdata=(posixThread_data_saveBuffer<T>*)ptr;
 //fprintf(stderr,"thread%d  ptr =%p\n",0,ptr);
 //fprintf(stderr,"&thread%d_data=%p\n",pdata->thread_index,(void*)pdata);
 (*(pdata->pshared_image)).print("image buffer in thread");
@@ -106,6 +106,6 @@ fprintf(stderr,"posixThread_save\n");
 //Thread ending i.e. set state and stop
     stop(pdata);
   }//posixThread
-};//posixThread_save
-#endif/*POSIX_THREAD_SAVE*/
+};//save_buffer_posixThread
+#endif/*SAVE_BUFFER_POSIX_THREAD*/
 

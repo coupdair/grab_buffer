@@ -86,7 +86,7 @@ std::cerr<<std::flush;
 //! \todo [medium] create class for grab buffer thread
   std::vector<pthread_t> thread(thread_number);
   //!thread data array
-  std::vector< posixThread_save_data<int> > thread_data(thread_number);
+  std::vector< posixThread_data_saveBuffer<int> > thread_data(thread_number);
   //!state data array
 //  std::vector<bool> thread_state(thread_number);
   bool *thread_state=new bool[thread_number];
@@ -130,7 +130,7 @@ thread_data[t].shared_image.print("shared_image 2");
     thread_data[t].pgrab_mutex=&frame_mutex;
     thread_data[t].pgrab_index=&shared_frame_index;
     //create thread
-    posixThread_save<int> savebuffer;
+    save_buffer_posixThread<int> savebuffer;
     pthread_create(&(thread[t]),NULL,&(savebuffer.posixThread),(void*)(&thread_data[t]));
   }
   //grab init
